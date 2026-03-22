@@ -22,9 +22,9 @@ packages/
 npx weixin-acp login
 
 # 启动（-- 后面跟 ACP agent 的启动命令）
-npx weixin-acp start -- claude-agent-acp // https://github.com/zed-industries/claude-agent-acp
-npx weixin-acp start -- codex-acp        // https://github.com/zed-industries/codex-acp
-npx weixin-acp start -- kimi acp         // https://moonshotai.github.io/kimi-cli/zh/guides/getting-started.html#%E5%AE%89%E8%A3%85
+npx weixin-acp start -- claude-agent-acp # https://github.com/zed-industries/claude-agent-acp
+npx weixin-acp start -- codex-acp        # https://github.com/zed-industries/codex-acp
+npx weixin-acp start -- kimi acp         # https://moonshotai.github.io/kimi-cli/zh/guides/getting-started.html#%E5%AE%89%E8%A3%85
 ```
 
 `--` 后面的部分就是你的 ACP agent 启动命令，`weixin-acp` 会自动以子进程方式启动它，通过 JSON-RPC over stdio 进行通信。
