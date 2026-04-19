@@ -71,13 +71,15 @@ async function main() {
     }
 
     const [acpCommand, ...acpArgs] = process.argv.slice(ddIndex + 1);
-    await startAgent(acpCommand, acpArgs);
+    const bot = await startAgent(acpCommand, acpArgs);
+    await bot.wait();
     return;
   }
 
   if (command && command in BUILTIN_AGENTS) {
     const { command: acpCommand } = BUILTIN_AGENTS[command];
-    await startAgent(acpCommand);
+    const bot = await startAgent(acpCommand);
+    await bot.wait();
     return;
   }
 

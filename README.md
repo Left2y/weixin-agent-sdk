@@ -48,7 +48,7 @@ SDK 主要导出三样东西：
 
 - **`Agent`** 接口 —— 实现它就能接入微信
 - **`login()`** —— 扫码登录
-- **`start(agent)`** —— 启动消息循环，并返回可主动发消息的 `Bot`
+- **`start(agent)`** —— 启动消息循环，立即返回可主动发消息的 `Bot`
 
 ### Agent 接口
 
@@ -90,7 +90,8 @@ const echo: Agent = {
 };
 
 await login();
-const bot = await start(echo);
+const bot = start(echo);
+await bot.wait();
 ```
 
 ### 完整示例（自己管理对话历史）
@@ -115,12 +116,13 @@ const myAgent: Agent = {
 };
 
 await login();
-const bot = await start(myAgent);
+const bot = start(myAgent);
+await bot.wait();
 ```
 
 ### 主动发送消息
 
-`start()` 返回的 `Bot` 实例提供了 `sendMessage()`，可以在收到微信消息之外，主动给当前登录用户发送内容。
+`start()` 会立即返回 `Bot` 实例。`Bot` 提供了 `sendMessage()`，可以在收到微信消息之外，主动给当前登录用户发送内容；如果是 CLI/脚本程序，可以用 `bot.wait()` 等待消息循环结束。
 
 ```typescript
 import { login, start, type Agent } from "weixin-agent-sdk";
@@ -135,11 +137,13 @@ const agent: Agent = {
 };
 
 await login();
-const bot = await start(agent);
+const bot = start(agent);
 
 setInterval(() => {
   void bot.sendMessage("定时提醒：记得查看最新状态");
 }, 60_000);
+
+await bot.wait();
 ```
 
 也可以主动发送完整的 `ChatResponse`，包括图片、视频或文件：
@@ -208,7 +212,7 @@ OPENAI_API_KEY=sk-xxx pnpm run start -w packages/example-openai
 | 文件 | 返回 `{ media: { type: "file", url: "/path/to/doc.pdf" } }` |
 | 文本 + 媒体 | `text` 和 `media` 同时返回，文本作为附带说明发送 |
 | 远程图片 | `url` 填 HTTPS 链接，SDK 自动下载后上传到微信 CDN |
-| 主动发送 | 通过 `const bot = await start(agent)` 后调用 `bot.sendMessage(...)` |
+| 主动发送 | 通过 `const bot = start(agent)` 后调用 `bot.sendMessage(...)` |
 
 ## 内置斜杠命令
 

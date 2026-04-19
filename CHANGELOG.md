@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.0 (2026-04-19)
+
+### weixin-agent-sdk
+
+- **fix**: `start(agent)` 现在会立即返回 `Bot` 实例，并新增 `bot.wait()` 用于等待后台消息循环结束，修复主动发送示例在停止前拿不到 `bot` 的问题
+
 ## 0.4.0 (2026-04-05)
 
 ### weixin-agent-sdk

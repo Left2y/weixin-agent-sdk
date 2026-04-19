@@ -137,6 +137,7 @@ export class Bot {
   private readonly _cdnBaseUrl: string;
   private readonly _token?: string;
   private readonly _userId: string;
+  private readonly _monitorPromise: Promise<void>;
 
   /** @internal */
   constructor(params: {
@@ -145,12 +146,27 @@ export class Bot {
     cdnBaseUrl: string;
     token?: string;
     userId: string;
+    monitorPromise: Promise<void>;
   }) {
     this._accountId = params.accountId;
     this._baseUrl = params.baseUrl;
     this._cdnBaseUrl = params.cdnBaseUrl;
     this._token = params.token;
     this._userId = params.userId;
+    this._monitorPromise = params.monitorPromise;
+    this._monitorPromise.catch(() => {
+      // Errors are re-thrown to callers that explicitly wait for the bot.
+    });
+  }
+
+  /**
+   * Wait until the background WeChat monitor stops.
+   *
+   * This is useful for CLI programs that should keep running until the bot is
+   * aborted, and for surfacing unrecoverable monitor errors to the caller.
+   */
+  async wait(): Promise<void> {
+    await this._monitorPromise;
   }
 
   /**
@@ -215,11 +231,11 @@ export class Bot {
 
 /**
  * Start the bot — long-polls for new messages and dispatches them to the agent.
- * Blocks until the abort signal fires or an unrecoverable error occurs.
  *
- * Returns a `Bot` instance with `sendMessage()` for proactive messaging.
+ * Returns a `Bot` instance immediately. Use `bot.wait()` when a CLI program
+ * should block until the background monitor stops.
  */
-export async function start(agent: Agent, opts?: StartOptions): Promise<Bot> {
+export function start(agent: Agent, opts?: StartOptions): Bot {
   const log = opts?.log ?? console.log;
 
   // Resolve account
@@ -252,15 +268,7 @@ export async function start(agent: Agent, opts?: StartOptions): Promise<Bot> {
 
   log(`[weixin] 启动 bot, account=${account.accountId}`);
 
-  const bot = new Bot({
-    accountId: account.accountId,
-    baseUrl: account.baseUrl,
-    cdnBaseUrl: account.cdnBaseUrl,
-    token: account.token,
-    userId,
-  });
-
-  await monitorWeixinProvider({
+  const monitorPromise = monitorWeixinProvider({
     baseUrl: account.baseUrl,
     cdnBaseUrl: account.cdnBaseUrl,
     token: account.token,
@@ -270,5 +278,12 @@ export async function start(agent: Agent, opts?: StartOptions): Promise<Bot> {
     log,
   });
 
-  return bot;
+  return new Bot({
+    accountId: account.accountId,
+    baseUrl: account.baseUrl,
+    cdnBaseUrl: account.cdnBaseUrl,
+    token: account.token,
+    userId,
+    monitorPromise,
+  });
 }
